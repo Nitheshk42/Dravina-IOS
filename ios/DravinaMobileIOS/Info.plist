@@ -60,5 +60,18 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>UIAppFonts</key>
+		<array>
+		<string>Ionicons.ttf</string>
+		</array>
+		<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>com.googleusercontent.apps.842238403079-qo2jads6djdes6025vdu4d890biqa0ka</string>
+    </array>
+  </dict>
+</array>
 </dict>
 </plist>

@@ -89,8 +89,8 @@ const SplashScreen = ({ navigation }) => {
         const AsyncStorage = require('@react-native-async-storage/async-storage').default;
         const hasPasscode = await AsyncStorage.getItem('userPasscode');
 
-        let destination = 'Login';
-        let params = {};
+        let destination = 'Passcode';
+        let params = {mode : 'create'};
 
         if (token && hasPasscode) {
           destination = 'Passcode';

@@ -255,14 +255,14 @@ const DashboardScreen = ({ navigation }) => {
 
         {showProfile && (
           <View style={styles.profileDropdown}>
-            <TouchableOpacity style={styles.dropdownItem} activeOpacity={0.7}>
-              <Icon name="card-outline" size={18} color="#4ecdc4" />
-              <Text style={styles.dropdownText}>My Accounts</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.dropdownItem} activeOpacity={0.7}>
-              <Icon name="help-circle-outline" size={18} color="#4ecdc4" />
-              <Text style={styles.dropdownText}>FAQ</Text>
-            </TouchableOpacity>
+            <TouchableOpacity style={styles.dropdownItem} activeOpacity={0.7} onPress={() => { setShowProfile(false); navigation.navigate('MyAccounts'); }}>
+            <Icon name="card-outline" size={18} color="#4ecdc4" />
+            <Text style={styles.dropdownText}>My Accounts</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.dropdownItem} activeOpacity={0.7} onPress={() => { setShowProfile(false); navigation.navigate('FAQ'); }}>
+            <Icon name="help-circle-outline" size={18} color="#4ecdc4" />
+            <Text style={styles.dropdownText}>FAQ</Text>
+          </TouchableOpacity>
             <TouchableOpacity style={styles.dropdownItem} onPress={handleLogout} activeOpacity={0.7}>
               <Icon name="log-out-outline" size={18} color="#e74c3c" />
               <Text style={[styles.dropdownText, { color: '#e74c3c' }]}>Logout</Text>

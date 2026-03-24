@@ -8,6 +8,7 @@ import SendMoneyScreen from '../screens/SendMoneyScreen';
 import HistoryScreen from '../screens/HistoryScreen';
 import RecipientsScreen from '../screens/RecipientsScreen';
 
+
 const Tab = createBottomTabNavigator();
 
 const TabIcon = ({ name, focused, color }) => (

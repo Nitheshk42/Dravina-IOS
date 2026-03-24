@@ -7,6 +7,9 @@ import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
 import PasscodeScreen from '../screens/PasscodeScreen';
 import TabNavigator from './TabNavigator';
+import SendAmountScreen from '../screens/SendAmountScreen';
+import ConfirmTransferScreen from '../screens/ConfirmTransferScreen';
+import TransferSuccessScreen from '../screens/TransferSuccessScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -21,6 +24,9 @@ const AppNavigator = () => {
         <Stack.Screen name="Signup" component={SignupScreen} />
         <Stack.Screen name="Passcode" component={PasscodeScreen} />
         <Stack.Screen name="Dashboard" component={TabNavigator} />
+        <Stack.Screen name="SendAmount" component={SendAmountScreen} />
+        <Stack.Screen name="ConfirmTransfer" component={ConfirmTransferScreen} />
+        <Stack.Screen name="TransferSuccess" component={TransferSuccessScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -12,6 +12,7 @@ import ConfirmTransferScreen from '../screens/ConfirmTransferScreen';
 import TransferSuccessScreen from '../screens/TransferSuccessScreen';
 import AddRecipientScreen from '../screens/AddRecipientScreen';
 import EditRecipientScreen from '../screens/EditRecipientScreen';
+import TransactionDetailScreen from '../screens/TransactionDetailScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +32,7 @@ const AppNavigator = () => {
         <Stack.Screen name="TransferSuccess" component={TransferSuccessScreen} />
         <Stack.Screen name="AddRecipient" component={AddRecipientScreen} />
         <Stack.Screen name="EditRecipient" component={EditRecipientScreen} />
+        <Stack.Screen name="TransactionDetail" component={TransactionDetailScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

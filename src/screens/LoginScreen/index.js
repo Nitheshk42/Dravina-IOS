@@ -107,6 +107,79 @@ const LoginScreen = ({ navigation }) => {
           </View>
         </View>
 
+        {/* ── FEATURE HIGHLIGHTS ── */}
+        <Text style={styles.whyTitle}>Why Draviṇa?</Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.featureCards}
+          contentContainerStyle={styles.featureCardsContent}>
+          {[
+            {
+              icon: 'flash-outline',
+              title: 'Instant Transfers',
+              desc: 'Money reaches your loved ones in minutes, not days',
+              color: '#4ecdc4',
+              bg: 'rgba(78,205,196,0.08)',
+              border: 'rgba(78,205,196,0.2)',
+            },
+            {
+              icon: 'cash-outline',
+              title: '$0.99 Flat Fee',
+              desc: 'No hidden charges. No percentage cuts. Just 99 cents',
+              color: '#60a5fa',
+              bg: 'rgba(96,165,250,0.08)',
+              border: 'rgba(96,165,250,0.2)',
+            },
+            {
+              icon: 'globe-outline',
+              title: '7+ Countries',
+              desc: 'Send to India, UK, Europe, Australia, Canada, Singapore & UAE',
+              color: '#a78bfa',
+              bg: 'rgba(167,139,250,0.08)',
+              border: 'rgba(167,139,250,0.2)',
+            },
+            {
+              icon: 'shield-checkmark-outline',
+              title: 'Bank-Level Security',
+              desc: 'Your money is protected with 256-bit encryption',
+              color: '#f59e0b',
+              bg: 'rgba(245,158,11,0.08)',
+              border: 'rgba(245,158,11,0.2)',
+            },
+            {
+              icon: 'trending-up-outline',
+              title: 'Best Exchange Rates',
+              desc: 'Real mid-market rates. No markup. Save up to 8x vs banks',
+              color: '#4ecdc4',
+              bg: 'rgba(78,205,196,0.08)',
+              border: 'rgba(78,205,196,0.2)',
+            },
+            {
+              icon: 'school-outline',
+              title: 'Built for Students',
+              desc: 'Send money home easily. First 3 transfers with zero fees',
+              color: '#f472b6',
+              bg: 'rgba(244,114,182,0.08)',
+              border: 'rgba(244,114,182,0.2)',
+            },
+          ].map((feature, index) => (
+            <View
+              key={index}
+              style={[
+                styles.featureCard,
+                { backgroundColor: feature.bg, borderColor: feature.border },
+              ]}>
+              <View style={[styles.featureIconCircle, { backgroundColor: feature.bg, borderColor: feature.border }]}>
+                <Icon name={feature.icon} size={22} color={feature.color} />
+              </View>
+              <Text style={[styles.featureCardTitle, { color: feature.color }]}>{feature.title}</Text>
+              <Text style={styles.featureCardDesc}>{feature.desc}</Text>
+            </View>
+          ))}
+        </ScrollView>
+
+
         {/* ── LOGIN CARD ── */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Welcome back</Text>
@@ -200,20 +273,7 @@ const LoginScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* ── FEATURES ── */}
-        <View style={styles.features}>
-          {[
-            { icon: 'flash-outline', text: 'Instant transfers' },
-            { icon: 'shield-checkmark-outline', text: 'Bank-level security' },
-            { icon: 'globe-outline', text: '7+ countries' },
-          ].map((feature, index) => (
-            <View key={index} style={styles.featurePill}>
-              <Icon name={feature.icon} size={14} color="rgba(255,255,255,0.55)" />
-              <Text style={styles.featureText}>{feature.text}</Text>
-            </View>
-          ))}
-        </View>
-
+       
         <Text style={styles.feeText}>
           Just <Text style={styles.feeBold}>$0.99 flat fee</Text>. No hidden charges. Ever.
         </Text>

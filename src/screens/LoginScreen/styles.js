@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
   // ── Branding ──
   brandSection: {
     alignItems: 'center',
-    paddingTop: 70,
+    paddingTop: 60,
     paddingBottom: 30,
   },
 //     logo: {
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
 //   },
 logoContainer: {
     width: 200,
-    height: 160,
+    height: 120,
     //borderRadius: 24,
     backgroundColor: 'rgba(78,205,196,0.08)',
     //borderWidth: 1,
@@ -224,31 +224,48 @@ logoContainer: {
     fontWeight: '700',
   },
 
-  // ── Features ──
-  features: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 8,
-    marginTop: 28,
+  // ── Feature Highlights ──
+  whyTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: 'rgba(255,255,255,0.6)',
+    textAlign: 'center',
+    marginTop: 4,
+    marginBottom: 12,
+  },
+  featureCards: {
+    marginBottom: 16,
+  },
+  featureCardsContent: {
     paddingHorizontal: 20,
+    gap: 12,
   },
-  featurePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+  featureCard: {
+    width: 160,
+    borderRadius: 20,
+    padding: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.09)',
-    borderRadius: 100,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
   },
-  featureText: {
-    color: 'rgba(255,255,255,0.55)',
-    fontSize: 12,
-    fontWeight: '600',
+  featureIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 14,
   },
+  featureCardTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    marginBottom: 6,
+  },
+  featureCardDesc: {
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.4)',
+    lineHeight: 16,
+  },
+
 
   // ── Fee ──
   feeText: {

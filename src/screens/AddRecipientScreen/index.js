@@ -50,11 +50,27 @@ const AddRecipientScreen = ({ navigation }) => {
 
   const validate = () => {
     if (!form.fullName.trim()) return 'Please enter the full name';
+    if (form.fullName.trim().length < 2) return 'Name must be at least 2 characters';
+    
     if (!form.email.trim()) return 'Please enter the email address';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return 'Please enter a valid email address';
+    
     if (!form.phone.trim()) return 'Please enter the phone number';
+    if (!/^[\d\s\+\-()]{7,15}$/.test(form.phone)) return 'Please enter a valid phone number';
+    
     if (!form.country) return 'Please select a country';
+    
     if (!form.bankAccount.trim()) return 'Please enter the bank account number';
-    if (!form.ifscCode.trim()) return 'Please enter the IFSC/bank code';
+    if (!/^\d+$/.test(form.bankAccount.trim())) return 'Bank account must contain only numbers';
+    
+    if (!form.ifscCode.trim()) return 'Please enter the bank code';
+    
+    // Country-specific bank code validation
+    if (form.country === 'India' && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(form.ifscCode.toUpperCase()))
+      return 'Invalid IFSC code (format: ABCD0123456)';
+    if (form.country === 'United Kingdom' && !/^\d{2}-?\d{2}-?\d{2}$/.test(form.ifscCode.replace(/-/g, '')))
+      return 'Invalid Sort Code (format: 12-34-56)';
+    
     return null;
   };
 

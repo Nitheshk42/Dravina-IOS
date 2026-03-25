@@ -222,7 +222,7 @@ const SendAmountScreen = ({ navigation, route }) => {
             <View>
               <Text style={styles.accountName}>{selectedAccount?.bank_name || 'Select Account'}</Text>
               <Text style={styles.accountType}>
-                {selectedAccount ? `${selectedAccount.account_type} · ${selectedAccount.account_no}` : 'Tap to select'}
+                {selectedAccount ? `${selectedAccount.account_type} · ${selectedAccount.account_no || selectedAccount.iban || selectedAccount.bankAccount || '****'}` : 'Tap to select'}
               </Text>
             </View>
           </View>

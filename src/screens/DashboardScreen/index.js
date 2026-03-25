@@ -9,6 +9,8 @@ import {
   Dimensions,
   FlatList,
   Modal,
+  Share,
+  Alert,
   Linking,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -18,17 +20,20 @@ import {
   getLimits,
   getRates,
   getHistory,
+  getReferralStats,
+  generateReferralCode,
   logoutUser,
   clearAccessToken,
   clearUser,
 } from '../../services/api';
 import styles from './styles';
+import { AppState } from 'react-native';
 
 const { width } = Dimensions.get('window');
 const FLAT_FEE = 0.99;
 
 // ─── PROMO BANNERS ──────────────────────────────────────────────
-const PROMO_BANNERS = [
+const STATIC_BANNERS = [
   {
     id: '1', tag: 'STUDENT SPECIAL', tagColor: '#4ecdc4', tagBg: 'rgba(78,205,196,0.2)',
     title: 'First 3 transfers free!', subtitle: 'No fees for new students',
@@ -43,11 +48,6 @@ const PROMO_BANNERS = [
     id: '3', tag: 'REFER & EARN', tagColor: '#a78bfa', tagBg: 'rgba(167,139,250,0.2)',
     title: 'Invite classmates, get $25', subtitle: 'Both you and your friend earn $25',
     bgColor: '#2d1a4e', bgColorInner: '#4a2d7a', icon: 'gift-outline',
-  },
-  {
-    id: '4', tag: 'RATE ALERT', tagColor: '#f59e0b', tagBg: 'rgba(245,158,11,0.2)',
-    title: 'INR at 83.12 — Best time!', subtitle: 'Rate is higher than last week',
-    bgColor: '#7c3a12', bgColorInner: '#b45309', icon: 'trending-up-outline',
   },
   {
     id: '5', tag: 'FESTIVE OFFER', tagColor: '#f472b6', tagBg: 'rgba(244,114,182,0.2)',
@@ -75,16 +75,40 @@ const CircleProgress = ({ percentage, color, size = 52 }) => (
       borderRadius: size / 2, borderWidth: 4,
       borderColor: 'rgba(255,255,255,0.08)',
     }} />
-    <View style={{
-      position: 'absolute', width: size, height: size,
-      borderRadius: size / 2, borderWidth: 4,
-      borderColor: color,
-      borderRightColor: 'transparent',
-      borderBottomColor: percentage > 50 ? color : 'transparent',
-      transform: [{ rotate: `${(percentage / 100) * 360 - 90}deg` }],
-    }} />
+    {percentage > 0 && (
+      <View style={{
+        position: 'absolute', width: size, height: size,
+        borderRadius: size / 2, borderWidth: 4,
+        borderColor: color,
+        borderRightColor: percentage > 25 ? color : 'transparent',
+        borderBottomColor: percentage > 50 ? color : 'transparent',
+        borderLeftColor: percentage > 75 ? color : 'transparent',
+        transform: [{ rotate: `${(percentage / 100) * 360 - 90}deg` }],
+      }} />
+    )}
   </View>
 );
+
+const handleShare = async () => {
+    const code = referral.referralCode || 'DRAVINA';
+    const message = `Join Dravina and we both get $25! Use my referral code: ${code}\n\nSend money internationally with just $0.99 fee.\nDownload now: https://dravina.com/download?ref=${code}`;
+    
+    try {
+      const result = await Share.share({ message });
+      if (result.action === Share.dismissedAction) {
+        // User dismissed share sheet
+      }
+    } catch (error) {
+      // Fallback: copy to clipboard
+      try {
+        const Clipboard = require('@react-native-clipboard/clipboard').default;
+        Clipboard.setString(message);
+        Alert.alert('Copied!', 'Referral link copied to clipboard. Share it with your friends!');
+      } catch {
+        Alert.alert('Your Referral Code', code);
+      }
+    }
+  };
 
 const DashboardScreen = ({ navigation }) => {
   const [user, setUser] = useState(null);
@@ -104,7 +128,13 @@ const DashboardScreen = ({ navigation }) => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successTransaction, setSuccessTransaction] = useState(null);
   const [monthlyStats, setMonthlyStats] = useState({
-    totalSent: 1200, feesSaved: 47.50, transferCount: 3,
+    totalSent: 0, feesSaved: 0, transferCount: 0,
+  });
+  const [referral, setReferral] = useState({
+    referralCode: '',
+    totalEarned: 0,
+    totalReferrals: 0,
+    bonusPerReferral: 25,
   });
 
   const bannerRef = useRef(null);
@@ -133,14 +163,14 @@ const DashboardScreen = ({ navigation }) => {
   }, []);
 
   // ── Auto-scroll rates ──
-  useEffect(() => {
+   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveRate(prev => {
-        const next = (prev + 1) % CURRENCIES.length;
-        try { rateRef.current?.scrollToIndex({ index: next, animated: true }); } catch {}
+      setActiveBanner(prev => {
+        const next = (prev + 1) % PROMO_BANNERS.length;
+        try { bannerRef.current?.scrollTo({ x: next * (width - 52), animated: true }); } catch {}
         return next;
       });
-    }, 3000);
+    }, 4000);
     return () => clearInterval(interval);
   }, []);
 
@@ -154,6 +184,36 @@ const DashboardScreen = ({ navigation }) => {
       return () => clearTimeout(timer);
     }
   }, [showSuccessModal]);
+
+  // ── Session timeout: 10 minutes of inactivity ──
+  useEffect(() => {
+    let inactivityTimer;
+    
+    const resetTimer = () => {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(async () => {
+        await clearAccessToken();
+        await clearUser();
+        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+       // await AsyncStorage.removeItem('userPasscode');
+        navigation.reset({ index: 0, routes: [{ name: 'Passcode', params: { mode: 'verify' } }] });
+      }, 5 * 60 * 1000); // 10 minutes
+    };
+
+    resetTimer();
+
+    // Reset timer when app comes back to foreground
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        resetTimer();
+      }
+    });
+
+    return () => {
+      clearTimeout(inactivityTimer);
+      subscription?.remove();
+    };
+  }, []);
 
   const dismissSuccessModal = () => {
     Animated.timing(modalOpacity, {
@@ -179,7 +239,36 @@ const DashboardScreen = ({ navigation }) => {
       const limitsRes = await getLimits();
       setLimits(limitsRes.data);
     } catch {}
+
+    // Fetch monthly stats from history
+    try {
+      const historyRes = await getHistory();
+      const history = historyRes.data.history || [];
+      const now = new Date();
+      const thisMonth = history.filter(h => {
+        const d = new Date(h.createdAt);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      });
+      const transfers = thisMonth.filter(h => h.type === 'transfer' && h.status === 'Completed');
+      const totalSent = transfers.reduce((sum, h) => sum + (h.amountSent || 0), 0);
+      const transferCount = transfers.length;
+      const feesSaved = transferCount * 24.01; // $25 bank fee - $0.99 our fee = $24.01 saved per transfer
+      setMonthlyStats({ totalSent, feesSaved: parseFloat(feesSaved.toFixed(2)), transferCount });
+    } catch {}
+
+    // Fetch referral stats
+    try {
+      const refRes = await getReferralStats();
+      if (!refRes.data.referralCode) {
+        const genRes = await generateReferralCode();
+        setReferral({ ...refRes.data, referralCode: genRes.data.referralCode });
+      } else {
+        setReferral(refRes.data);
+      }
+    } catch {}
   };
+
+  
 
   const fetchRates = async () => {
     try {
@@ -219,7 +308,7 @@ const DashboardScreen = ({ navigation }) => {
     await clearAccessToken();
     await clearUser();
     const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-    await AsyncStorage.removeItem('userPasscode');
+   // await AsyncStorage.removeItem('userPasscode');
     navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
   };
 
@@ -233,6 +322,18 @@ const DashboardScreen = ({ navigation }) => {
   const userName = user?.name || user?.fullName || 'User';
   const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
+  // ── Dynamic promo banners with live rate ──
+  const inrRate = rates['INR'] || 0;
+  const PROMO_BANNERS = [
+    ...STATIC_BANNERS.slice(0, 3),
+    {
+      id: '4', tag: 'RATE ALERT', tagColor: '#f59e0b', tagBg: 'rgba(245,158,11,0.2)',
+      title: `INR at ${inrRate.toFixed(2)} — ${inrRate > 83 ? 'Best time!' : 'Check rates'}`,
+      subtitle: inrRate > 83 ? 'Rate is higher than usual' : 'Send to India at live rates',
+      bgColor: '#7c3a12', bgColorInner: '#b45309', icon: 'trending-up-outline',
+    },
+    ...STATIC_BANNERS.slice(3),
+  ];
   const calcAmountNum = parseFloat(calcAmount) || 0;
   const calcRate = rates[calcCurrency.code] || 0;
   const calcResult = calcAmountNum > FLAT_FEE
@@ -363,58 +464,74 @@ const DashboardScreen = ({ navigation }) => {
         </View>
 
         {/* ── 3. PROMO BANNERS ── */}
-        <Text style={styles.sectionTitle}>OFFERS FOR YOU</Text>
-        <FlatList
-          ref={bannerRef}
-          data={PROMO_BANNERS}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={item => item.id}
-          style={styles.bannerList}
-          contentContainerStyle={styles.bannerContent}
-          onMomentumScrollEnd={e => {
-            const index = Math.round(e.nativeEvent.contentOffset.x / (width - 40));
-            setActiveBanner(index);
-          }}
-          renderItem={({ item }) => (
-            <TouchableOpacity style={styles.bannerCard} activeOpacity={0.9}>
-              <View style={[styles.bannerBg, { backgroundColor: item.bgColor }]}>
-                <View style={[styles.bannerBgInner, { backgroundColor: item.bgColorInner }]} />
-                <View style={styles.bannerIconBg}>
-                  <Icon name={item.icon} size={32} color="rgba(255,255,255,0.15)" />
-                </View>
-                <View style={[styles.bannerTag, { backgroundColor: item.tagBg }]}>
-                  <Text style={[styles.bannerTagText, { color: item.tagColor }]}>{item.tag}</Text>
-                </View>
-                <Text style={styles.bannerTitle}>{item.title}</Text>
-                <Text style={styles.bannerSubtitle}>{item.subtitle}</Text>
+      <Text style={styles.sectionTitle}>OFFERS FOR YOU</Text>
+      <ScrollView
+        ref={bannerRef}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        style={styles.bannerList}
+        contentContainerStyle={styles.bannerContent}
+        onMomentumScrollEnd={e => {
+          const index = Math.round(e.nativeEvent.contentOffset.x / (width - 52));
+          setActiveBanner(index);
+        }}>
+        {PROMO_BANNERS.map((item) => (
+          <TouchableOpacity
+            key={item.id}
+            style={styles.bannerCard}
+            activeOpacity={0.8}
+            onPress={() => {
+              if (item.id === '3') {
+                const code = referral?.referralCode || 'DRAVINA';
+                Alert.alert(
+                  'Refer & Earn $25',
+                  `Your referral code:\n\n${code}\n\nShare this with friends and both get $25!`,
+                  [
+                    { text: 'OK' },
+                  ]
+                );
+              } else {
+                navigation.navigate('Send');
+              }
+            }}>
+
+            <View style={[styles.bannerBg, { backgroundColor: item.bgColor }]}>
+              <View style={[styles.bannerBgInner, { backgroundColor: item.bgColorInner }]} />
+              <View style={styles.bannerIconBg}>
+                <Icon name={item.icon} size={32} color="rgba(255,255,255,0.15)" />
               </View>
-            </TouchableOpacity>
-          )}
-        />
-        <View style={styles.bannerDots}>
-          {PROMO_BANNERS.map((_, i) => (
-            <View key={i} style={[styles.bannerDot, activeBanner === i && styles.bannerDotActive]} />
-          ))}
-        </View>
+              <View style={[styles.bannerTag, { backgroundColor: item.tagBg }]}>
+                <Text style={[styles.bannerTagText, { color: item.tagColor }]}>{item.tag}</Text>
+              </View>
+              <Text style={styles.bannerTitle}>{item.title}</Text>
+              <Text style={styles.bannerSubtitle}>{item.subtitle}</Text>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+      <View style={styles.bannerDots}>
+        {PROMO_BANNERS.map((_, i) => (
+          <View key={i} style={[styles.bannerDot, activeBanner === i && styles.bannerDotActive]} />
+        ))}
+      </View>
 
         {/* ── 4. TRANSFER LIMITS ── */}
         <Text style={styles.sectionTitle}>TRANSFER LIMITS</Text>
         <View style={styles.limitsRow}>
           <View style={styles.limitCard}>
-            <CircleProgress percentage={limits.daily?.percentage || 30} color="#4ecdc4" />
+            <CircleProgress percentage={limits.daily?.percentage || 0} color="#4ecdc4" />
             <View style={styles.limitInfo}>
               <Text style={styles.limitLabel}>Daily</Text>
-              <Text style={styles.limitAmount}>${(limits.daily?.used || 1500).toLocaleString()}</Text>
+              <Text style={styles.limitAmount}>${(limits.daily?.used || 0).toLocaleString()}</Text>
               <Text style={styles.limitTotal}>of ${(limits.daily?.limit || 5000).toLocaleString()}</Text>
             </View>
           </View>
           <View style={styles.limitCard}>
-            <CircleProgress percentage={limits.weekly?.percentage || 50} color="#0f4c81" />
+            <CircleProgress percentage={limits.weekly?.percentage || 0} color="#0f4c81" />
             <View style={styles.limitInfo}>
               <Text style={styles.limitLabel}>Weekly</Text>
-              <Text style={styles.limitAmount}>${(limits.weekly?.used || 10000).toLocaleString()}</Text>
+              <Text style={styles.limitAmount}>${(limits.weekly?.used || 0).toLocaleString()}</Text>
               <Text style={styles.limitTotal}>of ${(limits.weekly?.limit || 20000).toLocaleString()}</Text>
             </View>
           </View>

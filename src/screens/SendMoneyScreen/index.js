@@ -22,6 +22,14 @@ const SendMoneyScreen = ({ navigation }) => {
     fetchRecipients();
   }, []);
 
+  // Refresh when screen comes back into focus
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchRecipients();
+    });
+    return unsubscribe;
+  }, [navigation]);
+
   const fetchRecipients = async () => {
     try {
       const response = await getRecipients();
@@ -89,7 +97,7 @@ const SendMoneyScreen = ({ navigation }) => {
             style={styles.favoritesList}
             contentContainerStyle={styles.favoritesContent}>
             {/* Add New */}
-            <TouchableOpacity style={styles.favoriteItem} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.favoriteItem} activeOpacity={0.7} onPress={() => navigation.navigate('AddRecipient')}>
               <View style={styles.favoriteAddBtn}>
                 <Icon name="add" size={24} color="#4ecdc4" />
               </View>
@@ -176,7 +184,7 @@ const SendMoneyScreen = ({ navigation }) => {
               : 'Add your first recipient to start sending money'}
           </Text>
           {!searchQuery && (
-            <TouchableOpacity style={styles.addRecipientBtn} activeOpacity={0.8}>
+            <TouchableOpacity style={styles.addRecipientBtn} activeOpacity={0.8} onPress={() => navigation.navigate('AddRecipient')} >
               <Icon name="add" size={18} color="#0a1628" />
               <Text style={styles.addRecipientBtnText}>Add Recipient</Text>
             </TouchableOpacity>

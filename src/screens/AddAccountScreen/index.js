@@ -87,18 +87,90 @@ const AddAccountScreen = ({ navigation }) => {
     setStep(2);
   };
 
-  const handleSubmit = async () => {
-    if (!formData.holder_name || !formData.bank_name || !formData.account_type) {
-      setError('Please fill in all required fields');
-      return;
-    }
-    if (config) {
-      for (const field of config.fields) {
-        if (!formData[field.key]) {
-          setError(`Please fill in ${field.label}`);
-          return;
-        }
+  const validateFields = () => {
+    if (!formData.holder_name?.trim()) return 'Please enter account holder name';
+    if (formData.holder_name.trim().length < 2) return 'Holder name must be at least 2 characters';
+    
+    if (!formData.bank_name?.trim()) return 'Please enter bank name';
+    if (!formData.account_type) return 'Please select account type';
+
+    if (!config) return 'Please select a country';
+
+    for (const field of config.fields) {
+      const value = formData[field.key]?.trim();
+      if (!value) return `Please enter ${field.label}`;
+
+      // Country-specific validation
+      switch (field.key) {
+        case 'account_no':
+          if (!/^\d+$/.test(value)) return `${field.label} must contain only numbers`;
+          if (selectedCountry === 'US' && (value.length < 8 || value.length > 17))
+            return 'US account number must be 8-17 digits';
+          if (selectedCountry === 'IN' && (value.length < 9 || value.length > 18))
+            return 'India account number must be 9-18 digits';
+          if (selectedCountry === 'GB' && value.length !== 8)
+            return 'UK account number must be exactly 8 digits';
+          if (selectedCountry === 'AU' && (value.length < 6 || value.length > 10))
+            return 'Australia account number must be 6-10 digits';
+          if (selectedCountry === 'CA' && (value.length < 5 || value.length > 12))
+            return 'Canada account number must be 5-12 digits';
+          if (selectedCountry === 'SG' && (value.length < 9 || value.length > 12))
+            return 'Singapore account number must be 9-12 digits';
+          break;
+
+        case 'routing_no':
+          if (!/^\d{9}$/.test(value)) return 'Routing number must be exactly 9 digits';
+          break;
+
+        case 'ifsc_code':
+          if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(value.toUpperCase()))
+            return 'Invalid IFSC code (format: ABCD0123456)';
+          break;
+
+        case 'sort_code':
+          const cleanSort = value.replace(/-/g, '');
+          if (!/^\d{6}$/.test(cleanSort)) return 'Sort code must be 6 digits (e.g. 20-00-00)';
+          break;
+
+        case 'iban':
+          const cleanIban = value.replace(/\s/g, '');
+          if (cleanIban.length < 15 || cleanIban.length > 34)
+            return 'IBAN must be 15-34 characters';
+          if (!/^[A-Z]{2}\d{2}[A-Z0-9]+$/.test(cleanIban.toUpperCase()))
+            return 'Invalid IBAN format';
+          break;
+
+        case 'bic_swift':
+          if (!/^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(value.toUpperCase()))
+            return 'Invalid BIC/SWIFT code (8 or 11 characters)';
+          break;
+
+        case 'bsb_code':
+          const cleanBsb = value.replace(/-/g, '');
+          if (!/^\d{6}$/.test(cleanBsb)) return 'BSB must be 6 digits (e.g. 062-000)';
+          break;
+
+        case 'transit_no':
+          if (!/^\d{5}$/.test(value)) return 'Transit number must be exactly 5 digits';
+          break;
+
+        case 'institution_no':
+          if (!/^\d{3}$/.test(value)) return 'Institution number must be exactly 3 digits';
+          break;
+
+        case 'bank_code':
+          if (!/^\d{4}$/.test(value)) return 'Bank code must be exactly 4 digits';
+          break;
       }
+    }
+    return null;
+  };
+
+  const handleSubmit = async () => {
+    const validationError = validateFields();
+    if (validationError) {
+      setError(validationError);
+      return;
     }
 
     setLoading(true);
@@ -108,10 +180,8 @@ const AddAccountScreen = ({ navigation }) => {
       Alert.alert('Account Added', 'Bank account linked successfully!', [
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
-    } catch {
-      Alert.alert('Account Added', 'Bank account linked successfully!', [
-        { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }

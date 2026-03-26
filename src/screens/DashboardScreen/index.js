@@ -90,23 +90,22 @@ const CircleProgress = ({ percentage, color, size = 52 }) => (
 );
 
 const handleShare = async () => {
-    const code = referral.referralCode || 'DRAVINA';
-    const message = `Join Dravina and we both get $25! Use my referral code: ${code}\n\nSend money internationally with just $0.99 fee.\nDownload now: https://dravina.com/download?ref=${code}`;
-    
     try {
-      const result = await Share.share({ message });
-      if (result.action === Share.dismissedAction) {
-        // User dismissed share sheet
-      }
-    } catch (error) {
-      // Fallback: copy to clipboard
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      const userData = await AsyncStorage.getItem('user');
+      let code = 'DRAVINA';
+      
+      // Try to get referral code from API
       try {
-        const Clipboard = require('@react-native-clipboard/clipboard').default;
-        Clipboard.setString(message);
-        Alert.alert('Copied!', 'Referral link copied to clipboard. Share it with your friends!');
-      } catch {
-        Alert.alert('Your Referral Code', code);
-      }
+        const refRes = await getReferralStats();
+        code = refRes.data.referralCode || code;
+      } catch {}
+
+      await Share.share({
+        message: `Join Dravina and we both get $25! Use my referral code: ${code}\n\nSend money internationally with just $0.99 fee.\nDownload now: https://dravina.com/download?ref=${code}`,
+      });
+    } catch (err) {
+      Alert.alert('Share', 'Unable to share right now. Please try again.');
     }
   };
 
@@ -360,6 +359,10 @@ const DashboardScreen = ({ navigation }) => {
             <Icon name="card-outline" size={18} color="#4ecdc4" />
             <Text style={styles.dropdownText}>My Accounts</Text>
           </TouchableOpacity>
+            <TouchableOpacity style={styles.dropdownItem} activeOpacity={0.7} onPress={() => { setShowProfile(false); navigation.navigate('AddMoney'); }}>
+            <Icon name="wallet-outline" size={18} color="#4ecdc4" />
+            <Text style={styles.dropdownText}>Add Money</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.dropdownItem} activeOpacity={0.7} onPress={() => { setShowProfile(false); navigation.navigate('FAQ'); }}>
             <Icon name="help-circle-outline" size={18} color="#4ecdc4" />
             <Text style={styles.dropdownText}>FAQ</Text>
@@ -481,19 +484,9 @@ const DashboardScreen = ({ navigation }) => {
             key={item.id}
             style={styles.bannerCard}
             activeOpacity={0.8}
-            onPress={() => {
-              if (item.id === '3') {
-                const code = referral?.referralCode || 'DRAVINA';
-                Alert.alert(
-                  'Refer & Earn $25',
-                  `Your referral code:\n\n${code}\n\nShare this with friends and both get $25!`,
-                  [
-                    { text: 'OK' },
-                  ]
-                );
-              } else {
-                navigation.navigate('Send');
-              }
+               onPress={() => {
+              if (item.id === '3') handleShare();
+              else navigation.navigate('Send');
             }}>
 
             <View style={[styles.bannerBg, { backgroundColor: item.bgColor }]}>

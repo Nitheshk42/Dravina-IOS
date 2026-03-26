@@ -16,6 +16,7 @@ import TransactionDetailScreen from '../screens/TransactionDetailScreen';
 import MyAccountsScreen from '../screens/MyAccountsScreen';
 import AddAccountScreen from '../screens/AddAccountScreen';
 import FAQScreen from '../screens/FAQScreen';
+import AddMoneyScreen from '../screens/AddMoneyScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -39,6 +40,7 @@ const AppNavigator = () => {
         <Stack.Screen name="MyAccounts" component={MyAccountsScreen} />
         <Stack.Screen name="AddAccount" component={AddAccountScreen} />
         <Stack.Screen name="FAQ" component={FAQScreen} />
+        <Stack.Screen name="AddMoney" component={AddMoneyScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

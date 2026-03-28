@@ -82,7 +82,7 @@ const SplashScreen = ({ navigation }) => {
     }, 800);
 
   
-    // Phase 4: Check auth + navigate (after 2200ms)
+    // Phase 4: Check auth + KYC + navigate (after 2200ms)
     setTimeout(async () => {
       try {
         const token = await getAccessToken();
@@ -90,17 +90,33 @@ const SplashScreen = ({ navigation }) => {
         const hasPasscode = await AsyncStorage.getItem('userPasscode');
 
         let destination = 'Login';
-        let params = {mode : 'create'};
+        let params = {};
 
         if (token && hasPasscode) {
-          destination = 'Passcode';
-          params = { mode: 'verify' };
+          // Check KYC status before going to Dashboard
+          try {
+            const { getKycStatus } = require('../../services/api');
+            const kycRes = await getKycStatus();
+            const kycStatus = kycRes.data.status;
+
+            if (kycStatus === 'verified') {
+              destination = 'Passcode';
+              params = { mode: 'verify' };
+            } else {
+              // KYC not complete — go to KYC after passcode
+              destination = 'Passcode';
+              params = { mode: 'verify', nextScreen: 'KYC' };
+            }
+          } catch {
+            // If KYC check fails, still go to passcode
+            destination = 'Passcode';
+            params = { mode: 'verify' };
+          }
         } else if (token && !hasPasscode) {
           destination = 'Passcode';
           params = { mode: 'create' };
         }
 
-        // Fade out entire screen
         Animated.timing(screenOpacity, {
           toValue: 0,
           duration: 400,

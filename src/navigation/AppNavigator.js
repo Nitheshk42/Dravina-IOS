@@ -17,6 +17,7 @@ import MyAccountsScreen from '../screens/MyAccountsScreen';
 import AddAccountScreen from '../screens/AddAccountScreen';
 import FAQScreen from '../screens/FAQScreen';
 import AddMoneyScreen from '../screens/AddMoneyScreen';
+import KycScreen from '../screens/KycScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -41,6 +42,7 @@ const AppNavigator = () => {
         <Stack.Screen name="AddAccount" component={AddAccountScreen} />
         <Stack.Screen name="FAQ" component={FAQScreen} />
         <Stack.Screen name="AddMoney" component={AddMoneyScreen} />
+        <Stack.Screen name="KYC" component={KycScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

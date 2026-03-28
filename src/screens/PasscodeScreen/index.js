@@ -51,23 +51,32 @@ const PasscodeScreen = ({ navigation, route }) => {
         firstPasscode: passcode,
       });
     } else if (mode === 'confirm') {
-      // Check if matches first entry
       if (passcode === firstPasscode) {
         await AsyncStorage.setItem('userPasscode', passcode);
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Dashboard' }],
-        });
+        // Check KYC status before going to Dashboard
+        try {
+          const { getKycStatus } = require('../../services/api');
+          const kycRes = await getKycStatus();
+          if (kycRes.data.status === 'verified') {
+            navigation.reset({ index: 0, routes: [{ name: 'Dashboard' }] });
+          } else {
+            navigation.reset({ index: 0, routes: [{ name: 'KYC' }] });
+          }
+        } catch {
+          // If KYC check fails, go to KYC anyway for new users
+          navigation.reset({ index: 0, routes: [{ name: 'KYC' }] });
+        }
       } else {
         triggerError("Passcodes don't match. Try again.");
-      }
+      };
     } else {
       // Verify mode
       const savedPasscode = await AsyncStorage.getItem('userPasscode');
       if (passcode === savedPasscode) {
+        const nextScreen = route?.params?.nextScreen;
         navigation.reset({
           index: 0,
-          routes: [{ name: 'Dashboard' }],
+          routes: [{ name: nextScreen || 'Dashboard' }],
         });
       } else {
         triggerError('Wrong passcode. Try again.');

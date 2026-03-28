@@ -195,4 +195,15 @@ export const verifyPriceMatch = (formData) =>
     headers: {'Content-Type': 'multipart/form-data'},
   });
 
+  // ─── KYC ──────────────────────────────────────────────────────
+export const getKycStatus = () => API.get('/kyc/status');
+export const submitKycSsn = (data) => API.post('/kyc/ssn', data);
+export const uploadKycDl = (formData) => API.post('/kyc/dl', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' },
+});
+export const uploadKycSelfie = (formData) => API.post('/kyc/selfie', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' },
+});
+export const deleteKyc = () => API.delete('/kyc');
+
 export default API;

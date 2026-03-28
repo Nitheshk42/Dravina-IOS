@@ -11,7 +11,7 @@ import {
   Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { loginUser, googleAuth, setAccessToken, setUser } from '../../services/api';
+import { loginUser, setAccessToken, setUser, getKycStatus } from '../../services/api';
 import { signInWithGoogle } from '../../services/googleAuth';
 import styles from './styles';
 
@@ -38,11 +38,23 @@ const LoginScreen = ({ navigation }) => {
       await setAccessToken(accessToken);
       await setUser({ ...user, name: user.fullName });
 
-       const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
       const hasPasscode = await AsyncStorage.getItem('userPasscode');
+
       if (hasPasscode) {
-        navigation.reset({ index: 0, routes: [{ name: 'Dashboard' }] });
+        // Returning user — check KYC
+        try {
+          const kycRes = await getKycStatus();
+          if (kycRes.data.status === 'verified') {
+            navigation.reset({ index: 0, routes: [{ name: 'Passcode', params: { mode: 'verify' } }] });
+          } else {
+            navigation.reset({ index: 0, routes: [{ name: 'Passcode', params: { mode: 'verify', nextScreen: 'KYC' } }] });
+          }
+        } catch {
+          navigation.reset({ index: 0, routes: [{ name: 'Passcode', params: { mode: 'verify' } }] });
+        }
       } else {
+        // New user — create passcode first
         navigation.reset({ index: 0, routes: [{ name: 'Passcode', params: { mode: 'create' } }] });
       }
     } catch (err) {
@@ -58,25 +70,35 @@ const LoginScreen = ({ navigation }) => {
       setGoogleLoading(true);
       const idToken = await signInWithGoogle();
 
-      const response = await googleAuth({ credential: idToken });
+      const response = await loginUser({ email, password });
       const { accessToken, user } = response.data;
 
       await setAccessToken(accessToken);
       await setUser({ ...user, name: user.fullName });
 
-       const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
       const hasPasscode = await AsyncStorage.getItem('userPasscode');
+
       if (hasPasscode) {
-        navigation.reset({ index: 0, routes: [{ name: 'Dashboard' }] });
+        // Returning user — check KYC
+        try {
+          const kycRes = await getKycStatus();
+          if (kycRes.data.status === 'verified') {
+            navigation.reset({ index: 0, routes: [{ name: 'Passcode', params: { mode: 'verify' } }] });
+          } else {
+            navigation.reset({ index: 0, routes: [{ name: 'Passcode', params: { mode: 'verify', nextScreen: 'KYC' } }] });
+          }
+        } catch {
+          navigation.reset({ index: 0, routes: [{ name: 'Passcode', params: { mode: 'verify' } }] });
+        }
       } else {
+        // New user — create passcode first
         navigation.reset({ index: 0, routes: [{ name: 'Passcode', params: { mode: 'create' } }] });
       }
     } catch (err) {
-      if (err.code !== '-5') {
-        setError('Google login failed. Please try again!');
-      }
+      setError(err.response?.data?.message || 'Something went wrong!');
     } finally {
-      setGoogleLoading(false);
+      setLoading(false);
     }
   };
 

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
+  KeyboardAvoidingView,
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -188,6 +189,7 @@ const AddAccountScreen = ({ navigation }) => {
   };
 
   return (
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: '#0a1628' }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
       <View style={styles.header}>
@@ -325,6 +327,7 @@ const AddAccountScreen = ({ navigation }) => {
       )}
 
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

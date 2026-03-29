@@ -39,6 +39,12 @@
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
+	<key>NSCameraUsageDescription</key>
+	<string>Dravina needs camera access to take photos of your ID and selfie for identity verification</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Dravina needs photo library access to upload your ID documents for verification</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Dravina needs permission to save receipts to your photo library</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -61,17 +67,17 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>UIAppFonts</key>
-		<array>
+	<array>
 		<string>Ionicons.ttf</string>
-		</array>
-		<key>CFBundleURLTypes</key>
-<array>
-  <dict>
-    <key>CFBundleURLSchemes</key>
-    <array>
-      <string>com.googleusercontent.apps.842238403079-qo2jads6djdes6025vdu4d890biqa0ka</string>
-    </array>
-  </dict>
-</array>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.842238403079-qo2jads6djdes6025vdu4d890biqa0ka</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

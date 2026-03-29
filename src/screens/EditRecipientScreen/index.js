@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
+  KeyboardAvoidingView,
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -76,6 +77,7 @@ const EditRecipientScreen = ({ navigation, route }) => {
   const selectedCountry = COUNTRIES.find(c => c.name === form.country);
 
   return (
+    <keyboardAvoidingView style={{ flex: 1, backgroundColor: '#0a1628' }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
       <View style={styles.header}>
@@ -193,6 +195,7 @@ const EditRecipientScreen = ({ navigation, route }) => {
       </View>
 
     </ScrollView>
+    </keyboardAvoidingView>
   );
 };
 

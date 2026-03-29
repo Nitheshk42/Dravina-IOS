@@ -7,6 +7,7 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
+   KeyboardAvoidingView,
   Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -33,6 +34,7 @@ const KycScreen = ({ navigation }) => {
   // DL
   const [dlFront, setDlFront] = useState(null);
   const [dlBack, setDlBack] = useState(null);
+  const [idType, setIdType] = useState(null);
   const [dlDone, setDlDone] = useState(false);
   const [dlResult, setDlResult] = useState(null);
 
@@ -147,7 +149,12 @@ const KycScreen = ({ navigation }) => {
       if (res.data.dlVerified) {
         setStep(2);
       } else {
-        setError(res.data.rejectionReason || 'DL verification failed. Please try again.');
+        const reason = res.data.rejectionReason || '';
+        if (reason.includes('does not match')) {
+          setError(`Name mismatch: The name on your DL doesn't match your registered name. Please make sure you signed up with the exact name on your DL, or re-upload a clearer photo.`);
+        } else {
+          setError('DL verification pending. Please upload clearer photos and try again.');
+        }
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to upload DL');
@@ -225,60 +232,99 @@ const KycScreen = ({ navigation }) => {
       <View style={styles.cardIcon}>
         <Icon name="card" size={28} color="#4ecdc4" />
       </View>
-      <Text style={styles.cardTitle}>Driver's License</Text>
+      <Text style={styles.cardTitle}>Identity Document</Text>
       <Text style={styles.cardSubtitle}>
-        Upload clear photos of the front and back of your DL. We'll verify your name and details automatically.
+        Choose your ID type and upload clear photos of the front and back.
       </Text>
 
-      <View style={styles.uploadRow}>
+      {/* ID Type Selector */}
+      <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
         <TouchableOpacity
-          style={[styles.uploadBtn, dlFront && styles.uploadBtnDone]}
-          onPress={() => showImagePicker(setDlFront)}
+          style={{
+            flex: 1, paddingVertical: 14, borderRadius: 14, alignItems: 'center',
+            borderWidth: 2,
+            borderColor: idType === 'dl' ? 'rgba(78,205,196,0.4)' : 'rgba(255,255,255,0.1)',
+            backgroundColor: idType === 'dl' ? 'rgba(78,205,196,0.08)' : 'rgba(255,255,255,0.03)',
+          }}
+          onPress={() => setIdType('dl')}
           activeOpacity={0.7}>
-          {dlFront ? (
-            <>
-              <Image source={{ uri: dlFront.uri }} style={styles.uploadPreview} resizeMode="cover" />
-              <Text style={[styles.uploadBtnText, styles.uploadBtnTextDone]}>Front uploaded</Text>
-            </>
-          ) : (
-            <>
-              <Icon name="camera-outline" size={28} color="rgba(255,255,255,0.3)" />
-              <Text style={styles.uploadBtnText}>DL Front</Text>
-            </>
-          )}
+          <Icon name="car-outline" size={22} color={idType === 'dl' ? '#4ecdc4' : 'rgba(255,255,255,0.35)'} />
+          <Text style={{
+            fontSize: 13, fontWeight: '700', marginTop: 6,
+            color: idType === 'dl' ? '#4ecdc4' : 'rgba(255,255,255,0.35)',
+          }}>Driver's License</Text>
         </TouchableOpacity>
-
         <TouchableOpacity
-          style={[styles.uploadBtn, dlBack && styles.uploadBtnDone]}
-          onPress={() => showImagePicker(setDlBack)}
+          style={{
+            flex: 1, paddingVertical: 14, borderRadius: 14, alignItems: 'center',
+            borderWidth: 2,
+            borderColor: idType === 'state_id' ? 'rgba(78,205,196,0.4)' : 'rgba(255,255,255,0.1)',
+            backgroundColor: idType === 'state_id' ? 'rgba(78,205,196,0.08)' : 'rgba(255,255,255,0.03)',
+          }}
+          onPress={() => setIdType('state_id')}
           activeOpacity={0.7}>
-          {dlBack ? (
-            <>
-              <Image source={{ uri: dlBack.uri }} style={styles.uploadPreview} resizeMode="cover" />
-              <Text style={[styles.uploadBtnText, styles.uploadBtnTextDone]}>Back uploaded</Text>
-            </>
-          ) : (
-            <>
-              <Icon name="camera-outline" size={28} color="rgba(255,255,255,0.3)" />
-              <Text style={styles.uploadBtnText}>DL Back</Text>
-            </>
-          )}
+          <Icon name="id-card-outline" size={22} color={idType === 'state_id' ? '#4ecdc4' : 'rgba(255,255,255,0.35)'} />
+          <Text style={{
+            fontSize: 13, fontWeight: '700', marginTop: 6,
+            color: idType === 'state_id' ? '#4ecdc4' : 'rgba(255,255,255,0.35)',
+          }}>State ID</Text>
         </TouchableOpacity>
       </View>
 
-      {dlResult && (
-        <View style={[styles.resultBox, dlResult.dlVerified ? styles.resultSuccess : styles.resultFail]}>
-          <Icon
-            name={dlResult.dlVerified ? 'checkmark-circle' : 'alert-circle'}
-            size={20}
-            color={dlResult.dlVerified ? '#4ecdc4' : '#e74c3c'}
-          />
-          <Text style={[styles.resultText, { color: dlResult.dlVerified ? '#4ecdc4' : '#e74c3c' }]}>
-            {dlResult.dlVerified
-              ? `Verified: ${dlResult.dlName || 'Name extracted'}`
-              : 'Verification pending — please ensure photos are clear'}
-          </Text>
-        </View>
+      {/* Upload buttons — only show after selection */}
+      {idType && (
+        <>
+          <View style={styles.uploadRow}>
+            <TouchableOpacity
+              style={[styles.uploadBtn, dlFront && styles.uploadBtnDone]}
+              onPress={() => showImagePicker(setDlFront)}
+              activeOpacity={0.7}>
+              {dlFront ? (
+                <>
+                  <Image source={{ uri: dlFront.uri }} style={styles.uploadPreview} resizeMode="cover" />
+                  <Text style={[styles.uploadBtnText, styles.uploadBtnTextDone]}>Front uploaded</Text>
+                </>
+              ) : (
+                <>
+                  <Icon name="camera-outline" size={28} color="rgba(255,255,255,0.3)" />
+                  <Text style={styles.uploadBtnText}>{idType === 'dl' ? 'DL Front' : 'ID Front'}</Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.uploadBtn, dlBack && styles.uploadBtnDone]}
+              onPress={() => showImagePicker(setDlBack)}
+              activeOpacity={0.7}>
+              {dlBack ? (
+                <>
+                  <Image source={{ uri: dlBack.uri }} style={styles.uploadPreview} resizeMode="cover" />
+                  <Text style={[styles.uploadBtnText, styles.uploadBtnTextDone]}>Back uploaded</Text>
+                </>
+              ) : (
+                <>
+                  <Icon name="camera-outline" size={28} color="rgba(255,255,255,0.3)" />
+                  <Text style={styles.uploadBtnText}>{idType === 'dl' ? 'DL Back' : 'ID Back'}</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {dlResult && (
+            <View style={[styles.resultBox, dlResult.dlVerified ? styles.resultSuccess : styles.resultFail]}>
+              <Icon
+                name={dlResult.dlVerified ? 'checkmark-circle' : 'alert-circle'}
+                size={20}
+                color={dlResult.dlVerified ? '#4ecdc4' : '#e74c3c'}
+              />
+              <Text style={[styles.resultText, { color: dlResult.dlVerified ? '#4ecdc4' : '#e74c3c' }]}>
+                {dlResult.dlVerified
+                  ? `Verified: ${dlResult.dlName || 'Name extracted'}`
+                  : dlResult.rejectionReason || 'Verification pending — please ensure photos are clear'}
+              </Text>
+            </View>
+          )}
+        </>
       )}
     </View>
   );
@@ -290,8 +336,7 @@ const KycScreen = ({ navigation }) => {
       </View>
       <Text style={styles.cardTitle}>Selfie Verification</Text>
       <Text style={styles.cardSubtitle}>
-        Take a clear selfie of your face. Make sure you're in good lighting with no sunglasses or hats.
-      </Text>
+Take a clear selfie of YOUR face. This must match the person on the ID you uploaded. Using someone else's photo will result in rejection.      </Text>
 
       <TouchableOpacity
         style={[styles.selfieBtn, selfie && styles.selfieBtnDone]}
@@ -316,7 +361,7 @@ const KycScreen = ({ navigation }) => {
 
   const canProceed = () => {
     if (step === 0) return ssn.replace(/[^\d]/g, '').length === 9;
-    if (step === 1) return dlFront && dlBack;
+    if (step === 1) return idType && dlFront && dlBack;
     if (step === 2) return selfie;
     return false;
   };
@@ -328,6 +373,8 @@ const KycScreen = ({ navigation }) => {
   };
 
   return (
+
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
       {/* ── HEADER ── */}
@@ -390,6 +437,7 @@ const KycScreen = ({ navigation }) => {
       </TouchableOpacity>
 
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

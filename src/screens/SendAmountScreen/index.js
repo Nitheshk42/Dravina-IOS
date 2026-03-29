@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
+  KeyboardAvoidingView,
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -115,6 +116,7 @@ const SendAmountScreen = ({ navigation, route }) => {
   };
 
   return (
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: '#0a1628' }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
       {/* ── HEADER ── */}
@@ -245,6 +247,7 @@ const SendAmountScreen = ({ navigation, route }) => {
       </TouchableOpacity>
 
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

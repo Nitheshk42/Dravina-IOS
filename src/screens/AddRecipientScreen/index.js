@@ -187,13 +187,50 @@ const AddRecipientScreen = ({ navigation }) => {
         {/* Phone */}
         <Text style={styles.label}>PHONE NUMBER</Text>
         <View style={styles.inputContainer}>
-          <Icon name="call-outline" size={18} color="rgba(255,255,255,0.35)" style={styles.inputIcon} />
+          <TouchableOpacity
+            style={{
+              flexDirection: 'row', alignItems: 'center', gap: 4,
+              backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 8,
+              paddingHorizontal: 8, paddingVertical: 6, marginRight: 8,
+            }}
+            onPress={() => {
+              // Auto-set country code based on selected country
+              const codes = {
+                'India': '+91', 'United Kingdom': '+44', 'Europe': '+49',
+                'Australia': '+61', 'Canada': '+1', 'Singapore': '+65',
+                'UAE': '+971', 'United States': '+1',
+              };
+              const code = codes[form.country] || '+1';
+              if (!form.phone.startsWith('+')) {
+                handleChange('phone', code + ' ');
+              }
+            }}
+            activeOpacity={0.7}>
+            <Text style={{ color: '#4ecdc4', fontSize: 14, fontWeight: '700' }}>
+              {form.phone.startsWith('+') ? form.phone.split(' ')[0] : 
+                form.country === 'India' ? '+91' :
+                form.country === 'United Kingdom' ? '+44' :
+                form.country === 'Australia' ? '+61' :
+                form.country === 'Canada' ? '+1' :
+                form.country === 'Singapore' ? '+65' :
+                form.country === 'UAE' ? '+971' : '+1'}
+            </Text>
+            <Icon name="chevron-down" size={12} color="rgba(255,255,255,0.4)" />
+          </TouchableOpacity>
           <TextInput
             style={styles.input}
-            placeholder="+91 9876543210"
+            placeholder="9876543210"
             placeholderTextColor="rgba(255,255,255,0.2)"
-            value={form.phone}
-            onChangeText={v => handleChange('phone', v)}
+            value={form.phone.includes(' ') ? form.phone.split(' ').slice(1).join(' ') : form.phone}
+            onChangeText={v => {
+              const codes = {
+                'India': '+91', 'United Kingdom': '+44', 'Europe': '+49',
+                'Australia': '+61', 'Canada': '+1', 'Singapore': '+65',
+                'UAE': '+971', 'United States': '+1',
+              };
+              const code = codes[form.country] || '+1';
+              handleChange('phone', code + ' ' + v.replace(/[^\d]/g, ''));
+            }}
             keyboardType="phone-pad"
           />
         </View>

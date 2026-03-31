@@ -4,7 +4,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // ─── API INSTANCE ─────────────────────────────────────────────
 // Change this URL to your backend server
 const API = axios.create({
-  baseURL: 'http://10.2.2.166:8080/api', // Dev: use your machine's IP for physical device
+  baseURL: __DEV__ 
+  ? (typeof navigator !== 'undefined' && navigator.product === 'ReactNative' 
+    ? 'http://192.168.4.50:8080/api'  // Real device
+    : 'http://localhost:8080/api')   // Simulator
+  : 'https://dravina-java-backend-1.onrender.com/api', // Production
+  //baseURL: 'http://10.2.2.166:8080/api', // Dev: use your machine's IP for physical device
+  //baseURL: 'http://localhost:8080/api',
   withCredentials: true,
   timeout: 15000, // 15 second timeout for mobile networks
 });

@@ -182,9 +182,9 @@ const HistoryScreen = ({ navigation }) => {
                 {/* Details */}
                 <View style={styles.txInfo}>
                   <View style={styles.txTopRow}>
-                    <Text style={styles.txTitle}>
-                      {isTransfer ? `Sent to ${tx.country}` : 'Deposit'}
-                    </Text>
+                     <Text style={styles.txTitle}>
+                  {isTransfer ? `Sent to ${tx.recipientName || tx.recipient_name || tx.country || tx.toCurrency}` : 'Deposit'}
+                </Text>
                     <Text style={[styles.txAmount, isTransfer ? styles.txAmountSent : styles.txAmountDeposit]}>
                       {isTransfer ? `-$${tx.amountSent}` : `+$${tx.amount}`}
                     </Text>

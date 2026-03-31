@@ -23,7 +23,7 @@ const SplashScreen = ({ navigation }) => {
 
   // Dot cycling
   useEffect(() => {
-    const interval = setInterval(() => {
+    const interval = setInterval(() => {  
       setActiveDot(prev => (prev + 1) % 3);
     }, 400);
     return () => clearInterval(interval);
@@ -89,7 +89,7 @@ const SplashScreen = ({ navigation }) => {
         const AsyncStorage = require('@react-native-async-storage/async-storage').default;
         const hasPasscode = await AsyncStorage.getItem('userPasscode');
 
-        let destination = 'Login';
+        let destination = 'Welcome';
         let params = {};
 
         if (token && hasPasscode) {
@@ -130,7 +130,7 @@ const SplashScreen = ({ navigation }) => {
           duration: 400,
           useNativeDriver: true,
         }).start(() => {
-          navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+          navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] });
         });
       }
     }, 2200);

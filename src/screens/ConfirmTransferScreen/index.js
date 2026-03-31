@@ -34,12 +34,13 @@ const ConfirmTransferScreen = ({ navigation, route }) => {
   const handleConfirm = async () => {
     setLoading(true);
     try {
-      await sendMoney({
-        amountSent: data.amount,
-        amountReceived: parseFloat(data.recipientGets),
-        currency: data.country.code,
-        country: data.country.name,
+         await sendMoney({
+        amount: data.amount,
+        fromCurrency: data.userCurrency?.code || 'USD',
+        toCurrency: data.country.code,
         exchangeRate: parseFloat(data.exchangeRate),
+        recipientId: data.recipient?.id || '',
+        recipientName: data.recipient?.fullName || '',
       });
       navigation.navigate('TransferSuccess', {
         amount: data.amount,

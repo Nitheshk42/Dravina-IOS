@@ -135,6 +135,7 @@ const DashboardScreen = ({ navigation }) => {
     totalReferrals: 0,
     bonusPerReferral: 25,
   });
+  const [recentTransactions, setRecentTransactions] = useState([]);
 
   const bannerRef = useRef(null);
   const rateRef = useRef(null);
@@ -238,6 +239,10 @@ const DashboardScreen = ({ navigation }) => {
       const limitsRes = await getLimits();
       setLimits(limitsRes.data);
     } catch {}
+       try {
+      const historyRes = await getHistory();
+setRecentTransactions(history.filter(tx => tx.recipientName || tx.toCurrency !== tx.fromCurrency).slice(0, 3));
+    } catch {}
 
     // Fetch monthly stats from history
     try {
@@ -308,7 +313,7 @@ const DashboardScreen = ({ navigation }) => {
     await clearUser();
     const AsyncStorage = require('@react-native-async-storage/async-storage').default;
    // await AsyncStorage.removeItem('userPasscode');
-    navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+    navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] });
   };
 
   const getGreeting = () => {
@@ -409,64 +414,7 @@ const DashboardScreen = ({ navigation }) => {
             <View key={i} style={[styles.rateDot, activeRate === i && styles.rateDotActive]} />
           ))}
         </View>
-
-        {/* ── 2. MINI CALCULATOR ── */}
-        <View style={styles.calcCard}>
-          <View style={styles.calcHeader}>
-            <Icon name="calculator-outline" size={18} color="#4ecdc4" />
-            <Text style={styles.calcTitle}>Quick Calculator</Text>
-          </View>
-          <View style={styles.calcBody}>
-            <View style={styles.calcSendRow}>
-              <Text style={styles.calcLabel}>You send</Text>
-              <View style={styles.calcInputRow}>
-                <Text style={styles.calcDollar}>$</Text>
-                <TextInput
-                  style={styles.calcInput}
-                  value={calcAmount}
-                  onChangeText={setCalcAmount}
-                  keyboardType="numeric"
-                  placeholder="500"
-                  placeholderTextColor="rgba(255,255,255,0.2)"
-                />
-                <Text style={styles.calcUsd}>USD</Text>
-              </View>
-            </View>
-            <View style={styles.calcDivider}>
-              <View style={styles.calcDividerLine} />
-              <View style={styles.calcArrow}>
-                <Icon name="arrow-down" size={14} color="#4ecdc4" />
-              </View>
-              <View style={styles.calcDividerLine} />
-            </View>
-            <View style={styles.calcReceiveRow}>
-              <Text style={styles.calcLabel}>They receive</Text>
-              <View style={styles.calcResultRow}>
-                <Text style={styles.calcResult}>{calcResult}</Text>
-                <TouchableOpacity
-                  style={styles.calcCurrencyBtn}
-                  onPress={() => {
-                    const idx = CURRENCIES.findIndex(c => c.code === calcCurrency.code);
-                    setCalcCurrency(CURRENCIES[(idx + 1) % CURRENCIES.length]);
-                  }}>
-                  <CountryFlag isoCode={calcCurrency.isoCode} size={18} style={{ borderRadius: 4 }} />
-                  <Text style={styles.calcCurrencyCode}>{calcCurrency.code}</Text>
-                  <Icon name="chevron-down" size={14} color="rgba(255,255,255,0.5)" />
-                </TouchableOpacity>
-              </View>
-            </View>
-            <View style={styles.calcFeeRow}>
-              <Text style={styles.calcFeeText}>Fee: $0.99 flat</Text>
-              <Text style={styles.calcRateText}>1 USD = {calcRate.toFixed(calcCurrency.code === 'INR' ? 2 : 4)} {calcCurrency.code}</Text>
-            </View>
-          </View>
-          <TouchableOpacity style={styles.calcSendBtn} activeOpacity={0.8} onPress={() => navigation.navigate('Send')}>
-            <Text style={styles.calcSendBtnText}>Send Now</Text>
-            <Icon name="arrow-forward" size={16} color="#0a1628" />
-          </TouchableOpacity>
-        </View>
-
-        {/* ── 3. PROMO BANNERS ── */}
+         {/* ── 3. PROMO BANNERS ── */}
       <Text style={styles.sectionTitle}>OFFERS FOR YOU</Text>
       <ScrollView
         ref={bannerRef}
@@ -530,7 +478,109 @@ const DashboardScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* ── 5. MONTHLY SUMMARY ── */}
+        {/* ── 2. MINI CALCULATOR ── */}
+        <View style={styles.calcCard}>
+          <View style={styles.calcHeader}>
+            <Icon name="calculator-outline" size={18} color="#4ecdc4" />
+            <Text style={styles.calcTitle}>Quick Calculator</Text>
+          </View>
+          <View style={styles.calcBody}>
+            <View style={styles.calcSendRow}>
+              <Text style={styles.calcLabel}>You send</Text>
+              <View style={styles.calcInputRow}>
+                <Text style={styles.calcDollar}>$</Text>
+                <TextInput
+                  style={styles.calcInput}
+                  value={calcAmount}
+                  onChangeText={setCalcAmount}
+                  keyboardType="numeric"
+                  placeholder="500"
+                  placeholderTextColor="rgba(255,255,255,0.2)"
+                />
+                <Text style={styles.calcUsd}>USD</Text>
+              </View>
+            </View>
+            <View style={styles.calcDivider}>
+              <View style={styles.calcDividerLine} />
+              <View style={styles.calcArrow}>
+                <Icon name="arrow-down" size={14} color="#4ecdc4" />
+              </View>
+              <View style={styles.calcDividerLine} />
+            </View>
+            <View style={styles.calcReceiveRow}>
+              <Text style={styles.calcLabel}>They receive</Text>
+              <View style={styles.calcResultRow}>
+                <Text style={styles.calcResult}>{calcResult}</Text>
+                <TouchableOpacity
+                  style={styles.calcCurrencyBtn}
+                  onPress={() => {
+                    const idx = CURRENCIES.findIndex(c => c.code === calcCurrency.code);
+                    setCalcCurrency(CURRENCIES[(idx + 1) % CURRENCIES.length]);
+                  }}>
+                  <CountryFlag isoCode={calcCurrency.isoCode} size={18} style={{ borderRadius: 4 }} />
+                  <Text style={styles.calcCurrencyCode}>{calcCurrency.code}</Text>
+                  <Icon name="chevron-down" size={14} color="rgba(255,255,255,0.5)" />
+                </TouchableOpacity>
+              </View>
+            </View>
+            <View style={styles.calcFeeRow}>
+              <Text style={styles.calcFeeText}>Fee: $0.99 flat</Text>
+              <Text style={styles.calcRateText}>1 USD = {calcRate.toFixed(calcCurrency.code === 'INR' ? 2 : 4)} {calcCurrency.code}</Text>
+            </View>
+          </View>
+          <TouchableOpacity style={styles.calcSendBtn} activeOpacity={0.8} onPress={() => navigation.navigate('Send')}>
+            <Text style={styles.calcSendBtnText}>Send Now</Text>
+            <Icon name="arrow-forward" size={16} color="#0a1628" />
+          </TouchableOpacity>
+        </View>
+
+       {/* ── RECENT TRANSACTIONS ── */}
+      <Text style={styles.sectionTitle}>RECENT TRANSACTIONS</Text>
+      <View style={styles.transactionsList}>
+        {recentTransactions.length > 0 ? (
+          <>
+            {recentTransactions.map((tx, i) => (
+              <View key={tx.id} style={[styles.transactionItem, i < recentTransactions.length - 1 && styles.transactionBorder]}>
+                <View style={[styles.transactionIcon, { backgroundColor: tx.status === 'Completed' ? 'rgba(78,205,196,0.1)' : tx.status === 'Pending' ? 'rgba(245,158,11,0.1)' : 'rgba(231,76,60,0.1)' }]}>
+                  <Icon
+                    name="arrow-up-outline"
+                    size={18}
+                    color={tx.status === 'Completed' ? '#4ecdc4' : tx.status === 'Pending' ? '#f59e0b' : '#e74c3c'}
+                  />
+                </View>
+                <View style={styles.transactionInfo}>
+                  <Text style={styles.transactionTitle}>
+                    Sent to {tx.recipientName || tx.recipient_name || 'Recipient'}
+                  </Text>
+
+                  <Text style={styles.transactionDate}>{new Date(tx.createdAt || tx.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</Text>
+                </View>
+                <View style={styles.transactionRight}>
+                  <Text style={styles.transactionAmount}>-${tx.amount || tx.amountSent}</Text>
+
+                  <View style={styles.transactionStatusRow}>
+                    <View style={[styles.transactionStatusDot, { backgroundColor: (tx.status === 'Completed' || tx.status === 'COMPLETED') ? '#4ecdc4' : tx.status === 'Pending' ? '#f59e0b' : '#e74c3c' }]} />
+                    <Text style={[styles.transactionStatus, { color: (tx.status === 'Completed' || tx.status === 'COMPLETED') ? '#4ecdc4' : tx.status === 'Pending' ? '#f59e0b' : '#e74c3c' }]}>{tx.status}</Text>
+                  </View>
+                </View>
+              </View>
+            ))}
+            <TouchableOpacity style={styles.viewAllBtn} activeOpacity={0.7} onPress={() => navigation.navigate('History')}>
+              <Text style={styles.viewAllText}>View all transactions</Text>
+              <Icon name="arrow-forward" size={14} color="#4ecdc4" />
+            </TouchableOpacity>
+          </>
+        ) : (
+          <View style={styles.emptyTransactions}>
+            <Icon name="receipt-outline" size={24} color="rgba(255,255,255,0.2)" />
+            <Text style={styles.emptyTransactionsText}>No recent transactions</Text>
+          </View>
+        )}
+      </View>
+
+        
+
+        {/* ── 5. MONTHLY SUMMARY ──
         <View style={styles.summaryCard}>
           <View style={styles.summaryHeader}>
             <Icon name="analytics-outline" size={18} color="#4ecdc4" />
@@ -558,7 +608,7 @@ const DashboardScreen = ({ navigation }) => {
               You saved <Text style={{ fontWeight: '800', color: '#4ecdc4' }}>${monthlyStats.feesSaved.toFixed(2)}</Text> compared to banks!
             </Text>
           </View>
-        </View>
+        </View> */}
 
         {/* ── 6. FOOTER ── */}
         <View style={styles.footer}>

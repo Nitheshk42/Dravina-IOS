@@ -129,7 +129,7 @@ const LoginScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* ── FEATURE HIGHLIGHTS ── */}
+        {/* ── FEATURE HIGHLIGHTS ──
         <Text style={styles.whyTitle}>Why Draviṇa?</Text>
         <ScrollView
           horizontal
@@ -199,7 +199,7 @@ const LoginScreen = ({ navigation }) => {
               <Text style={styles.featureCardDesc}>{feature.desc}</Text>
             </View>
           ))}
-        </ScrollView>
+        </ScrollView> */}
 
 
         {/* ── LOGIN CARD ── */}
